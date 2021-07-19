@@ -2,11 +2,14 @@ use std::{io::Write, process::{Command, Stdio}};
 use futures::StreamExt;
 use reqwest::Response;
 
-pub async fn transcode(req_response: Response, filename: String) {
+pub async fn transcode(req_response: Response, filepath: String) {
     println!("ffmpeg started");
-    let mut command = Command::new("sh")
-        .arg("-c")
-        .arg(format!("ffmpeg -i pipe:0 -f wav \"{}\"", filename))
+    let mut command = Command::new("ffmpeg")
+        .arg("-i")
+        .arg("pipe:0")
+        .arg("-f")
+        .arg("wav")
+        .arg(format!("{}", filepath))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped()) 

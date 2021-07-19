@@ -45,7 +45,13 @@ async fn main() {
             }
             "" => {}
             _ => {
-                    let url = func::fetch_audio_url::fetch_audio_url(input).await.unwrap();
+                    let url = match func::fetch_audio_url::fetch_audio_url(input).await {
+                        Ok(url) => url,
+                        _ => {
+                            println!("Failed to fetch info from YT");
+                            continue;
+                        }
+                    };
                     let resp = reqwest::get(&url)
                         .await
                         .expect("Failed to download file");
