@@ -109,7 +109,7 @@ async fn main() {
             input.pop();
         }
         
-        match input.to_lowercase().as_str() {
+        match input.trim().to_lowercase().as_str() {
             "!exit" | "!quit" => {
                 println!("Exiting.");
                 std::process::exit(0);
@@ -117,24 +117,25 @@ async fn main() {
             "!help" => {
                 println!("there is no help");
             }
+            "" => {}
             _ => {
                     let url = func::fetch_audio_url::fetch_audio_url(input).await.unwrap();
                     let resp = reqwest::get(&url)
                         .await
                         .expect("Failed to download file");
-
+                    
                     println!("{}", &url);
-
+                    
                     let filename = gen
                         .generate()
                         .expect("Failed to generate ulid")
                         .to_string();
-
+                    
                     func::transcode_audio::transcode(resp, format!("{}/{}",temp_dir , &filename)).await;
-
+                    
                     let file = fs::File::open(format!("{}/{}",temp_dir , &filename))
                         .expect("Failed to open file");
-
+                    
                     func::play_stream::play(file).await;
                     fs::remove_file(format!("{}/{}",temp_dir , &filename))
                         .expect("Failed to delete temporary file");
