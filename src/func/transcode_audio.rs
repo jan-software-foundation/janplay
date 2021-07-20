@@ -3,7 +3,6 @@ use futures::StreamExt;
 use reqwest::Response;
 
 pub async fn transcode(req_response: Response, filepath: String) {
-    println!("ffmpeg started");
     let mut command = Command::new("ffmpeg")
         .arg("-i")
         .arg("pipe:0")
@@ -16,7 +15,7 @@ pub async fn transcode(req_response: Response, filepath: String) {
         .arg(format!("{}", filepath))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        //.stderr(Stdio::piped()) 
+        .stderr(Stdio::piped()) 
         .spawn().expect("Failed to summon ffmpeg");
     
     let mut stream = req_response.bytes_stream();
@@ -26,5 +25,4 @@ pub async fn transcode(req_response: Response, filepath: String) {
         stdin.write(&item.unwrap()).expect("Failed to write to stdin");
     };
     stdin.flush().expect("Failed to flush stdin");
-    println!("ffmpeg done");
 }

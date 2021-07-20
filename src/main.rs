@@ -39,7 +39,27 @@ async fn main() {
                 std::process::exit(0);
             }
             "!help" => {
-                println!("there is no help");
+                println!("!quit      Stop playback and exit");
+                println!("!pause     Pauses the player");
+                println!("!unpause   Resumes a paused player");
+                println!("");
+                println!("To play audio from YouTube, paste the video URL.");
+            }
+            "!pause" => {
+                if !sink.is_paused() {
+                    sink.pause();
+                    println!("Player paused.");
+                } else {
+                    println!("Player is already paused.");
+                }
+            }
+            "!unpause"|"!play" => {
+                if sink.is_paused() {
+                    sink.play();
+                    println!("Player unpaused.");
+                } else {
+                    println!("Player is not paused.");
+                }
             }
             "" => {}
             _ => {
@@ -53,8 +73,6 @@ async fn main() {
                 let resp = reqwest::get(&url)
                     .await
                     .expect("Failed to download file");
-                
-                println!("{}", &url);
                 
                 // Create temp directory
                 let temp_dir = format!("{}/janplay", std::env::temp_dir().to_str().unwrap());
@@ -70,14 +88,17 @@ async fn main() {
                 
                 let transcode = task::spawn(func::transcode_audio::transcode(resp, format!("{}/{}", temp_dir, &filename)));
                 
-                thread::sleep(Duration::from_millis(1000)); // mmmh, race conditions
+                // Wait until ffmpeg creates the file
+                while !Path::new(format!("{}/{}", temp_dir, &filename).as_str()).is_file() {
+                    thread::sleep(Duration::from_millis(50));
+                }
                 
-                //let file = fs::File::open(format!("{}/{}", temp_dir, &filename))
-                //    .expect("Failed to open file");
-                //
-                //func::play_stream::play(file, &sink).await;
-                //fs::remove_file(format!("{}/{}",temp_dir , &filename))
-                //    .expect("Failed to delete temporary file");
+                let file = fs::File::open(format!("{}/{}", temp_dir, &filename))
+                    .expect("Failed to open file");
+                
+                func::play_stream::play(file, &sink).await;
+                fs::remove_file(format!("{}/{}",temp_dir , &filename))
+                    .expect("Failed to delete temporary file");
                 
                 transcode.await.expect("death");
             }
