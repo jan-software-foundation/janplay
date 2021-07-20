@@ -8,11 +8,15 @@ pub async fn transcode(req_response: Response, filepath: String) {
         .arg("-i")
         .arg("pipe:0")
         .arg("-f")
-        .arg("wav")
+        .arg("ogg")
+        .arg("-blocksize")
+        .arg("2048")
+        .arg("-flush_packets")
+        .arg("1")
         .arg(format!("{}", filepath))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped()) 
+        //.stderr(Stdio::piped()) 
         .spawn().expect("Failed to summon ffmpeg");
     
     let mut stream = req_response.bytes_stream();
