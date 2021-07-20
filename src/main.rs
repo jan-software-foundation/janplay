@@ -11,7 +11,7 @@ mod func;
 #[tokio::main]
 async fn main() {
     // Create temp directory
-    let temp_dir = format!("{}/jancloud", std::env::temp_dir().to_str().unwrap());
+    let temp_dir = format!("{}/janplay", std::env::temp_dir().to_str().unwrap());
     if !Path::new(&temp_dir).is_dir() {
         fs::create_dir(&temp_dir).expect("Failed to create temp dir");
     }
